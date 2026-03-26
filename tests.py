@@ -27,10 +27,76 @@ def test_create_question_with_valid_points():
 
 def test_create_choice():
     question = Question(title='q1')
-    
+
     question.add_choice('a', False)
 
     choice = question.choices[0]
     assert len(question.choices) == 1
     assert choice.text == 'a'
     assert not choice.is_correct
+
+def test_choice_text_empty():
+    question = Question(title='q1')
+    with pytest.raises(Exception):
+        question.add_choice('')
+
+def test_choice_text_too_long():
+    question = Question(title='q1')
+    with pytest.raises(Exception):
+        question.add_choice('a' * 101)
+
+def test_choice_ids_sequential():
+    question = Question(title='q1')
+    question.add_choice('a')
+    question.add_choice('b')
+    assert question.choices[0].id == 1
+    assert question.choices[1].id == 2
+
+def test_remove_choice_valid_id():
+    question = Question(title='q1')
+    question.add_choice('a')
+    question.add_choice('b')
+    question.remove_choice_by_id(1)
+    assert len(question.choices) == 1
+    assert question.choices[0].id == 2
+
+def test_remove_choice_invalid_id():
+    question = Question(title='q1')
+    with pytest.raises(Exception):
+        question.remove_choice_by_id(999)
+
+def test_remove_all_choices():
+    question = Question(title='q1')
+    question.add_choice('a')
+    question.add_choice('b')
+    question.remove_all_choices()
+    assert len(question.choices) == 0
+
+def test_set_correct_choice_single():
+    question = Question(title='q1')
+    question.add_choice('a')
+    question.add_choice('b')
+    question.set_correct_choices([2])
+    assert question.choices[1].is_correct == True
+
+def test_set_correct_choices_multiple():
+    question = Question(title='q1')
+    question.add_choice('a')
+    question.add_choice('b')
+    question.add_choice('c')
+    question.set_correct_choices([1, 3])
+    assert question.choices[0].is_correct == True
+    assert question.choices[2].is_correct == True
+
+def test_set_correct_invalid_id():
+    question = Question(title='q1')
+    question.add_choice('a')
+    with pytest.raises(Exception):
+        question.set_correct_choices([999])
+
+def test_max_selections_limit():
+    question = Question(title='q1', max_selections=1)
+    question.add_choice('a', True)
+    question.add_choice('b', False)
+    with pytest.raises(Exception):
+        question.correct_selected_choices([1, 2])
