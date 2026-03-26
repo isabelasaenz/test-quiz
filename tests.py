@@ -100,3 +100,25 @@ def test_max_selections_limit():
     question.add_choice('b', False)
     with pytest.raises(Exception):
         question.correct_selected_choices([1, 2])
+
+@pytest.fixture
+def sample_question():
+    question = Question(title='Sample Question', max_selections=2)
+    question.add_choice('a', True)
+    question.add_choice('b', False)
+    question.add_choice('c', True)
+    return question
+
+def test_fixture_choices_count(sample_question):
+    assert len(sample_question.choices) == 3
+
+def test_fixture_correct_choices(sample_question):
+    assert sample_question.choices[0].is_correct == True
+    assert sample_question.choices[1].is_correct == False
+    assert sample_question.choices[2].is_correct == True
+
+def test_fixture_correct_selected(sample_question):
+    selected = [sample_question.choices[0].id, sample_question.choices[1].id]
+    result = sample_question.correct_selected_choices(selected)
+    assert len(result) == 1
+    assert result[0] == sample_question.choices[0].id
